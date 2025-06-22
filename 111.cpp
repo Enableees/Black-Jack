@@ -56,7 +56,6 @@ void ChangeUsername() {
 void drawtable()
 {
     string table = u8R"(                                        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    string table = u8R"(                                        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                       %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                     %%%%                                                                                                             %%%%
                                    %%%%  _______    _______    _______    _______    _______    _______    _______    _______    _______    _______   %%%%
@@ -75,7 +74,7 @@ void drawtable()
                             %%%%     dMP.aMF    dMP     dMP dMP   dMP.aMP    dMP"AMF      | / | \ |         dK .dMP     dMP dMP   dMP.aMP    dMP"AMF         %%%%
                             %%%%    dMMMMP"    dMMMMMP dMP dMP    VMMMP"    dMP dMP       |/  |  \|         VMMMP"     dMP dMP    VMMMP"    dMP dMP          %%%%
                             %%%%                                                           ¯¯¯¯¯¯¯                                                           %%%%
-                            %%%%                                                                           Текущая ставка:)" + to_string(Bit) + u8R"(              Баланс:)" + to_string(Balance) + u8R"(       %%%%
+                            %%%%                                                                                                                             %%%%
                             %%%%         _______    _______    _______    _______    _______    _______    _______    _______    _______    _______          %%%%
                              %%%%       )" + cardup[10] + "  " + cardup[11] + "  " + cardup[12] + "  " + cardup[13] + "  " + cardup[14] + "  " + cardup[15] + "  " + cardup[16] + "  " + cardup[17] + "  " + cardup[18] + "  " + cardup[19] + u8R"(        %%%%
                               %%%%      |       |  |       |  |       |  |       |  |       |  |       |  |       |  |       |  |       |  |       |       %%%%
@@ -115,68 +114,6 @@ void drawtable()
 
 )";
     cout << table;
-}
-
-void randomcart(int checkmove)//0-Противник, 1-Игрок
-{
-    SetConsoleOutputCP(CP_UTF8);
-    string carts[13] = { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
-    int numcarts[12] = { 2,3,4,5,6,7,8,9,10,10,10,10 };
-    string suits[4] = { u8"♠", u8"♥", u8"♦", u8"♣" };
-    int num = rand() % 13;
-    int suitIndex = rand() % 4;
-
-    while (check[num][suitIndex] == 1)
-    {
-        num = rand() % 13;
-        suitIndex = rand() % 4;
-    }
-    check[num][suitIndex] = 1;
-    string value = carts[num];
-    string suit = suits[suitIndex];
-
-    if (checkmove == 0) {
-        cardup[cardenemy] = "|V      |";
-        cardmiddle[cardenemy] = "|   S   |";
-        carddown[cardenemy] = "|      V|";
-    }
-    else {
-        cardup[cardplayer + 10] = "|V      |";
-        cardmiddle[cardplayer + 10] = "|   S   |";
-        carddown[cardplayer + 10] = "|      V|";
-    }
-
-    if (value != "10")
-    {
-        if (checkmove == 0) {
-            cardup[cardenemy].replace(cardup[cardenemy].find('V'), 1, value);
-            carddown[cardenemy].replace(carddown[cardenemy].find('V'), 1, value);
-            cardmiddle[cardenemy].replace(cardmiddle[cardenemy].find('S'), 1, suit);
-            cardenemy++;
-        }
-        else {
-            cardup[cardplayer + 10].replace(cardup[cardplayer + 10].find('V'), 1, value);
-            carddown[cardplayer + 10].replace(carddown[cardplayer + 10].find('V'), 1, value);
-            cardmiddle[cardplayer + 10].replace(cardmiddle[cardplayer + 10].find('S'), 1, suit);
-            cardplayer++;
-        }
-    }
-    else {
-        if (checkmove == 0) {
-            cardup[cardenemy] = "|10     |";
-            carddown[cardenemy] = "|     10|";
-            cardmiddle[cardenemy].replace(cardmiddle[cardenemy].find('S'), 1, suit);
-            cardenemy;
-        }
-        else {
-            cardup[cardplayer + 10] = "|10     |";
-            carddown[cardplayer + 10] = "|     10|";
-            cardmiddle[cardplayer + 10].replace(cardmiddle[cardplayer + 10].find('S'), 1, suit);
-            cardplayer++;
-        }
-    }
-    system("cls");
-    drawtable();
 }
 
 void randomcart(int checkmove)//0-Противник, 1-Игрок
@@ -355,7 +292,6 @@ void Exitt() {
 void NewGamee() {
     system("cls");
     SetConsoleOutputCP(CP_UTF8);
-    SetConsoleOutputCP(CP_UTF8);
     srand(time(NULL));
     bool bitPlaced = false; // Флаг, ставилась ли ставка
     for (int i = 0; i < 10; i++) {
@@ -368,14 +304,10 @@ void NewGamee() {
             cardmiddle[i + 10] = u8"|   " + to_string(i + 1) + u8"   |";
         }
         else {
-        else {
             cardmiddle[i] = u8"|   " + to_string(i + 1) + u8"  |";
             cardmiddle[i + 10] = u8"|   " + to_string(i + 1) + u8"  |";
         }
     }
-    drawtable();
-    Sleep(900);
-    for (int i = 0; i < 2; i++) {
     drawtable();
     Sleep(900);
     for (int i = 0; i < 2; i++) {
@@ -477,26 +409,6 @@ void Menuu() {
     while (true) {
         system("cls");
         string menuuu = u8R"( 
-                                    ╔══════════════════════════════════════════════════════════════════════════════════════════════════╗
-                                    ║  /$$$$$$$  /$$        /$$$$$$   /$$$$$$  /$$   /$$          /$$$$$  /$$$$$$   /$$$$$$  /$$   /$$ ║
-                                    ║ | $$__  $$| $$       /$$__  $$ /$$__  $$| $$  /$$/         |__  $$ /$$__  $$ /$$__  $$| $$  /$$/ ║
-                                    ║ | $$  \ $$| $$      | $$  \ $$| $$  \__/| $$ /$$/             | $$| $$  \ $$| $$  \__/| $$ /$$/  ║
-                                    ║ | $$$$$$$ | $$      | $$$$$$$$| $$      | $$$$$/              | $$| $$$$$$$$| $$      | $$$$$/   ║
-                                    ║ | $$__  $$| $$      | $$__  $$| $$      | $$  $$         /$$  | $$| $$__  $$| $$      | $$  $$   ║
-                                    ║ | $$  \ $$| $$      | $$  | $$| $$    $$| $$\  $$       | $$  | $$| $$  | $$| $$    $$| $$\  $$  ║
-                                    ║ | $$$$$$$/| $$$$$$$$| $$  | $$|  $$$$$$/| $$ \  $$      |  $$$$$$/| $$  | $$|  $$$$$$/| $$ \  $$ ║
-                                    ║ |_______/ |________/|__/  |__/ \______/ |__/  \__/       \______/ |__/  |__/ \______/ |__/  \__/ ║
-                                    ╠══════════════════════════════════════════════════════════════════════════════════════════════════╣
-                                    ║  Authors:                                   VLad and Efim                                        ║
-                                    ╠══════════════════════════════════════════════════════════════════════════════════════════════════╣
-                                    ║                                                                                                  ║
-                                    ║                                             [1] New Game                                         ║
-                                    ║                                             [2] info                                             ║
-                                    ║                                             [3] Profile                                          ║
-                                    ║                                             [4] Settings                                         ║
-                                    ║                                             [5] Exit                                             ║
-                                    ║                                                                                                  ║
-                                    ╚══════════════════════════════════════════════════════════════════════════════════════════════════╝
                                     ╔══════════════════════════════════════════════════════════════════════════════════════════════════╗
                                     ║  /$$$$$$$  /$$        /$$$$$$   /$$$$$$  /$$   /$$          /$$$$$  /$$$$$$   /$$$$$$  /$$   /$$ ║
                                     ║ | $$__  $$| $$       /$$__  $$ /$$__  $$| $$  /$$/         |__  $$ /$$__  $$ /$$__  $$| $$  /$$/ ║
