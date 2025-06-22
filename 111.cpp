@@ -14,65 +14,14 @@ string cardmiddle[20];//Центральная часть карты
 string carddown[20];//Нижняя часть карты
 int cardplayer = 0;//Номер взятой карты игрока
 int cardenemy = 0;//Номер взятой карты соперника
-
-void randomcart(int checkmove)//0-Противник, 1-Игрок
-{
-    SetConsoleOutputCP(CP_UTF8);
-    string carts[13] = { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
-    string suits[4] = { u8"♠", u8"♥", u8"♦", u8"♣" };
-    int num = rand() % 13;
-    int suitIndex = rand() % 4;
-
-    while (check[num][suitIndex] == 1)
-    {
-        num = rand() % 13;
-        suitIndex = rand() % 4;
-    }
-    check[num][suitIndex] = 1;
-    string value = carts[num];
-    string suit = suits[suitIndex];
-
-    if (checkmove == 0) {
-        cardup[cardenemy] = "|V      |";
-        cardmiddle[cardenemy] = "|   S   |";
-        carddown[cardenemy] = "|      V|";
-    }
-    else {
-        cardup[cardplayer+10] = "|V      |";
-        cardmiddle[cardplayer + 10] = "|   S   |";
-        carddown[cardplayer + 10] = "|      V|";
-    }
-
-    if (value != "10")
-    {
-        if (checkmove == 0) {
-            cardup[cardenemy].replace(cardup[cardenemy].find('V'), 1, value);
-            carddown[cardenemy].replace(carddown[cardenemy].find('V'), 1, value);
-            cardmiddle[cardenemy].replace(cardmiddle[cardenemy].find('S'), 1, suit);
-        }
-        else {
-            cardup[cardplayer + 10].replace(cardup[cardplayer+10].find('V'), 1, value);
-            carddown[cardplayer + 10].replace(carddown[cardplayer+10].find('V'), 1, value);
-            cardmiddle[cardplayer + 10].replace(cardmiddle[cardplayer + 10].find('S'), 1, suit);
-        }
-    }
-    else {
-        if (checkmove == 0) {
-            cardup[cardenemy] = "|10     |";
-            carddown[cardenemy] = "|     10|";
-            cardmiddle[cardenemy].replace(cardmiddle[cardenemy].find('S'), 1, suit);
-        }
-        else {
-            cardup[cardplayer + 10] = "|10     |";
-            carddown[cardplayer + 10] = "|     10|";
-            cardmiddle[cardplayer+10].replace(cardmiddle[cardplayer+10].find('S'), 1, suit);
-        }
-    }
-}
+int Balance = 10000;//Баланс
+int Bit;//Ставка
+int summplayer;//Сумма карт игрока
+int summenemy;//Сумма карт соперника
 
 void drawtable()
 {
-                                string table = u8R"(                                        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    string table = u8R"(                                        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                       %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                     %%%%                                                                                                             %%%%
                                    %%%%  _______    _______    _______    _______    _______    _______    _______    _______    _______    _______   %%%%
@@ -91,7 +40,7 @@ void drawtable()
                             %%%%     dMP.aMF    dMP     dMP dMP   dMP.aMP    dMP"AMF      | / | \ |         dK .dMP     dMP dMP   dMP.aMP    dMP"AMF         %%%%
                             %%%%    dMMMMP"    dMMMMMP dMP dMP    VMMMP"    dMP dMP       |/  |  \|         VMMMP"     dMP dMP    VMMMP"    dMP dMP          %%%%
                             %%%%                                                           ¯¯¯¯¯¯¯                                                           %%%%
-                            %%%%                                                                                                                             %%%%
+                            %%%%                                                                           Текущая ставка:)" + to_string(Bit) + u8R"(              Баланс:)" + to_string(Balance) + u8R"(       %%%%
                             %%%%         _______    _______    _______    _______    _______    _______    _______    _______    _______    _______          %%%%
                              %%%%       )" + cardup[10] + "  " + cardup[11] + "  " + cardup[12] + "  " + cardup[13] + "  " + cardup[14] + "  " + cardup[15] + "  " + cardup[16] + "  " + cardup[17] + "  " + cardup[18] + "  " + cardup[19] + u8R"(        %%%%
                               %%%%      |       |  |       |  |       |  |       |  |       |  |       |  |       |  |       |  |       |  |       |       %%%%
@@ -120,13 +69,75 @@ void drawtable()
                                                 ║                                             [1] More                                             ║
                                                 ║                                             [2] Stop                                             ║
                                                 ║                                             [3] Double                                           ║
-                                                ║                                             [4] Split                                            ║
+                                                ║                                             [4] Add bit                                          ║
                                                 ║                                             [5] Give up                                          ║
                                                 ║                                                                                                  ║
                                                 ╚══════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 )";
     cout << table;
+}
+
+void randomcart(int checkmove)//0-Противник, 1-Игрок
+{
+    SetConsoleOutputCP(CP_UTF8);
+    string carts[13] = { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
+    int numcarts[12] = { 2,3,4,5,6,7,8,9,10,10,10,10 };
+    string suits[4] = { u8"♠", u8"♥", u8"♦", u8"♣" };
+    int num = rand() % 13;
+    int suitIndex = rand() % 4;
+
+    while (check[num][suitIndex] == 1)
+    {
+        num = rand() % 13;
+        suitIndex = rand() % 4;
+    }
+    check[num][suitIndex] = 1;
+    string value = carts[num];
+    string suit = suits[suitIndex];
+
+    if (checkmove == 0) {
+        cardup[cardenemy] = "|V      |";
+        cardmiddle[cardenemy] = "|   S   |";
+        carddown[cardenemy] = "|      V|";
+    }
+    else {
+        cardup[cardplayer + 10] = "|V      |";
+        cardmiddle[cardplayer + 10] = "|   S   |";
+        carddown[cardplayer + 10] = "|      V|";
+    }
+
+    if (value != "10")
+    {
+        if (checkmove == 0) {
+            cardup[cardenemy].replace(cardup[cardenemy].find('V'), 1, value);
+            carddown[cardenemy].replace(carddown[cardenemy].find('V'), 1, value);
+            cardmiddle[cardenemy].replace(cardmiddle[cardenemy].find('S'), 1, suit);
+            cardenemy++;
+        }
+        else {
+            cardup[cardplayer + 10].replace(cardup[cardplayer + 10].find('V'), 1, value);
+            carddown[cardplayer + 10].replace(carddown[cardplayer + 10].find('V'), 1, value);
+            cardmiddle[cardplayer + 10].replace(cardmiddle[cardplayer + 10].find('S'), 1, suit);
+            cardplayer++;
+        }
+    }
+    else {
+        if (checkmove == 0) {
+            cardup[cardenemy] = "|10     |";
+            carddown[cardenemy] = "|     10|";
+            cardmiddle[cardenemy].replace(cardmiddle[cardenemy].find('S'), 1, suit);
+            cardenemy;
+        }
+        else {
+            cardup[cardplayer + 10] = "|10     |";
+            carddown[cardplayer + 10] = "|     10|";
+            cardmiddle[cardplayer + 10].replace(cardmiddle[cardplayer + 10].find('S'), 1, suit);
+            cardplayer++;
+        }
+    }
+    system("cls");
+    drawtable();
 }
 
 void infoo() {
@@ -230,7 +241,7 @@ void Exitt() {
 
 void NewGamee() {
     system("cls");
-        SetConsoleOutputCP(CP_UTF8);
+    SetConsoleOutputCP(CP_UTF8);
     srand(time(NULL));
     for (int i = 0; i < 10; i++) {
         cardup[i] = u8"|       |";
@@ -241,82 +252,91 @@ void NewGamee() {
             cardmiddle[i] = u8"|   " + to_string(i + 1) + u8"   |";
             cardmiddle[i + 10] = u8"|   " + to_string(i + 1) + u8"   |";
         }
-        else{
+        else {
             cardmiddle[i] = u8"|   " + to_string(i + 1) + u8"  |";
             cardmiddle[i + 10] = u8"|   " + to_string(i + 1) + u8"  |";
         }
     }
-    for (int i = 0; i <= 10; i++) {
-        randomcart(0);
-        randomcart(1);
-        cardenemy = i;
-        cardplayer = i;
-    }
     drawtable();
-    // system("cls");
-    
-    /*while (true) {
-        if (GetKeyState(VK_LBUTTON)) {
-            cout << "2224\n";
+    Sleep(900);
+    for (int i = 0; i < 2; i++) {
+        randomcart(1);
+        Sleep(800);
+    }
+    randomcart(0);
+    int choice;
+    bool takecard = true;//Проверка 
+    int temp;//Для добавления ставки
+    while (true) {
+        cin >> choice;
+        switch (choice) {
+        case 1: {
+            if (Bit == 0)
+            {
+                cout << "First you need to place a bit!";
+                Sleep(1700);
+                system("cls");
+                drawtable();
+                break;
+            }
+            if (takecard && cardplayer < 10) {
+                randomcart(1);
+                break;
+            }
         }
-    }*/
-    HANDLE hin = GetStdHandle(STD_INPUT_HANDLE);
-    INPUT_RECORD InputRecord;
-    DWORD Events;
-    COORD coord; // для координат X, Y
-
-    SetConsoleMode(hin, ENABLE_MOUSE_INPUT);
-    //while (true)
-    //{
-    //    ReadConsoleInput(hin, &InputRecord, 1, &Events); // считывание 
-
-    //    if (InputRecord.Event.MouseEvent.dwButtonState == MOUSE_WHEELED) // нажато колесико
-    //    {
-    //        coord.X = InputRecord.Event.MouseEvent.dwMousePosition.X;
-    //        coord.Y = InputRecord.Event.MouseEvent.dwMousePosition.Y;
-    //        cout << "Kolesiko nazhato - X" << coord.X << ", Y = " << coord.Y << endl;
-    //    }
-    //    else if (InputRecord.Event.MouseEvent.dwButtonState == RIGHTMOST_BUTTON_PRESSED) // правая кнопка
-    //    {
-    //        coord.X = InputRecord.Event.MouseEvent.dwMousePosition.X;
-    //        coord.Y = InputRecord.Event.MouseEvent.dwMousePosition.Y;
-    //        cout << "right - X" << coord.X << ", Y = " << coord.Y << endl;
-    //    }
-    //    else if (InputRecord.Event.MouseEvent.dwButtonState == FROM_LEFT_1ST_BUTTON_PRESSED) // левая кнопка
-    //    {
-    //        coord.X = InputRecord.Event.MouseEvent.dwMousePosition.X;
-    //        coord.Y = InputRecord.Event.MouseEvent.dwMousePosition.Y;
-    //        cout << "left - X" << coord.X << ", Y = " << coord.Y << endl;
-    //    }
-
-    //}
-    system("pause");               //          ПО ХОРОШЕМУ МОЖНО УДАЛИТЬ, ДЛЯ УДОБСТВА!!!
+        case 2: takecard = false; break;
+        case 3: Profilee(); break;//Тута доделать надо
+        case 4:{
+            cout << "Bit amount: ";
+            cin >> temp;
+            if (temp <= Balance) {
+                Bit += temp;
+                system("cls");
+                drawtable();
+                break;
+            }
+            else {
+                cout << "The bit cannot exceed the current balance!";
+                Sleep(1700);
+                system("cls");
+                drawtable();
+                break;
+            }
+        }
+        case 5: Balance = Balance - Bit; Bit = 0; cardplayer = 0; cardenemy = 0; break;
+        default:
+            cout << "Invalid choice. Try again.\n";
+            Sleep(1500);
+            system("cls");
+            drawtable();
+        }
+    }
 }
 
-void Menuu(){
+void Menuu() {
     while (true) {
         system("cls");
         string menuuu = u8R"( 
-        ╔══════════════════════════════════════════════════════════════════════════════════════════════════╗
-        ║  /$$$$$$$  /$$        /$$$$$$   /$$$$$$  /$$   /$$          /$$$$$  /$$$$$$   /$$$$$$  /$$   /$$ ║
-        ║ | $$__  $$| $$       /$$__  $$ /$$__  $$| $$  /$$/         |__  $$ /$$__  $$ /$$__  $$| $$  /$$/ ║
-        ║ | $$  \ $$| $$      | $$  \ $$| $$  \__/| $$ /$$/             | $$| $$  \ $$| $$  \__/| $$ /$$/  ║
-        ║ | $$$$$$$ | $$      | $$$$$$$$| $$      | $$$$$/              | $$| $$$$$$$$| $$      | $$$$$/   ║
-        ║ | $$__  $$| $$      | $$__  $$| $$      | $$  $$         /$$  | $$| $$__  $$| $$      | $$  $$   ║
-        ║ | $$  \ $$| $$      | $$  | $$| $$    $$| $$\  $$       | $$  | $$| $$  | $$| $$    $$| $$\  $$  ║
-        ║ | $$$$$$$/| $$$$$$$$| $$  | $$|  $$$$$$/| $$ \  $$      |  $$$$$$/| $$  | $$|  $$$$$$/| $$ \  $$ ║
-        ║ |_______/ |________/|__/  |__/ \______/ |__/  \__/       \______/ |__/  |__/ \______/ |__/  \__/ ║
-        ╠══════════════════════════════════════════════════════════════════════════════════════════════════╣
-        ║  Authors:                                   VLad and Efim                                        ║
-        ╠══════════════════════════════════════════════════════════════════════════════════════════════════╣
-        ║                                                                                                  ║
-        ║                                             [1] New Game                                         ║
-        ║                                             [2] info                                             ║
-        ║                                             [3] Profile                                          ║
-        ║                                             [4] Settings                                         ║
-        ║                                             [5] Exit                                             ║
-        ║                                                                                                  ║
-        ╚══════════════════════════════════════════════════════════════════════════════════════════════════╝
+                                    ╔══════════════════════════════════════════════════════════════════════════════════════════════════╗
+                                    ║  /$$$$$$$  /$$        /$$$$$$   /$$$$$$  /$$   /$$          /$$$$$  /$$$$$$   /$$$$$$  /$$   /$$ ║
+                                    ║ | $$__  $$| $$       /$$__  $$ /$$__  $$| $$  /$$/         |__  $$ /$$__  $$ /$$__  $$| $$  /$$/ ║
+                                    ║ | $$  \ $$| $$      | $$  \ $$| $$  \__/| $$ /$$/             | $$| $$  \ $$| $$  \__/| $$ /$$/  ║
+                                    ║ | $$$$$$$ | $$      | $$$$$$$$| $$      | $$$$$/              | $$| $$$$$$$$| $$      | $$$$$/   ║
+                                    ║ | $$__  $$| $$      | $$__  $$| $$      | $$  $$         /$$  | $$| $$__  $$| $$      | $$  $$   ║
+                                    ║ | $$  \ $$| $$      | $$  | $$| $$    $$| $$\  $$       | $$  | $$| $$  | $$| $$    $$| $$\  $$  ║
+                                    ║ | $$$$$$$/| $$$$$$$$| $$  | $$|  $$$$$$/| $$ \  $$      |  $$$$$$/| $$  | $$|  $$$$$$/| $$ \  $$ ║
+                                    ║ |_______/ |________/|__/  |__/ \______/ |__/  \__/       \______/ |__/  |__/ \______/ |__/  \__/ ║
+                                    ╠══════════════════════════════════════════════════════════════════════════════════════════════════╣
+                                    ║  Authors:                                   VLad and Efim                                        ║
+                                    ╠══════════════════════════════════════════════════════════════════════════════════════════════════╣
+                                    ║                                                                                                  ║
+                                    ║                                             [1] New Game                                         ║
+                                    ║                                             [2] info                                             ║
+                                    ║                                             [3] Profile                                          ║
+                                    ║                                             [4] Settings                                         ║
+                                    ║                                             [5] Exit                                             ║
+                                    ║                                                                                                  ║
+                                    ╚══════════════════════════════════════════════════════════════════════════════════════════════════╝
         
         )";
         cout << menuuu;
@@ -324,15 +344,15 @@ void Menuu(){
         cin >> choice;
 
         switch (choice) {
-            case 1: NewGamee(); break;
-            case 2: infoo(); break;
-            case 3: Profilee(); break;
-            case 4: Settingss(); break;
-            case 5: Exitt(); break;
-            default:
-                cout << "Invalid choice. Try again.\n";
-                Sleep(1500);
-                break;
+        case 1: NewGamee(); break;
+        case 2: infoo(); break;
+        case 3: Profilee(); break;
+        case 4: Settingss(); break;
+        case 5: Exitt(); break;
+        default:
+            cout << "Invalid choice. Try again.\n";
+            Sleep(1500);
+            break;
         }
     }
 }
