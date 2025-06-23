@@ -20,9 +20,10 @@ int summplayer;//Сумма карт игрока
 int summenemy;//Сумма карт соперника
 int wins = 0; // победы
 int defeats = 0; // поражения
-int maxWins = 0; // количество побед
+int Wins = 0; // количество побед
 string lastGame; // последняя игра (статус)
 string username; // имя игрока
+void Menuu();
 
 void LoadProfile() {
     system("cls");
@@ -41,6 +42,7 @@ void ChangeUsername() {
     system("cls");
     cout << "Enter new nickname: ";
     getline(cin, username);
+    //cin >> username;
 
     username.erase(0, username.find_first_not_of(" \t\n\r\f\v"));
     username.erase(username.find_last_not_of(" \t\n\r\f\v") + 1);
@@ -55,6 +57,7 @@ void ChangeUsername() {
 
 void drawtable()
 {
+    system("cls");
     string table = u8R"(                                        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                       %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                     %%%%                                                                                                             %%%%
@@ -88,7 +91,7 @@ void drawtable()
 
                                                 ╔══════════════════════════════════════════════════════════════════════════════════════════════════╗
                                                  Player's name: )" + username + u8R"(                                                                                                 
-                                                 
+                                                 Sum of cards Player: )" + to_string(summplayer) + u8R"(     Sum of cards Enemy: )" + to_string(summenemy) + u8R"(
                                                  Current bet: )" + to_string(Bit) + u8R"(            Balance: )" + to_string(Balance) + u8R"(                                                                                                                                                          
                                                 ╚══════════════════════════════════════════════════════════════════════════════════════════════════╝
 
@@ -120,7 +123,7 @@ void randomcart(int checkmove)//0-Противник, 1-Игрок
 {
     SetConsoleOutputCP(CP_UTF8);
     string carts[13] = { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
-    int numcarts[12] = { 2,3,4,5,6,7,8,9,10,10,10,10 };
+    int numcarts[13] = { 2,3,4,5,6,7,8,9,10,10,10,10,11 };
     string suits[4] = { u8"♠", u8"♥", u8"♦", u8"♣" };
     int num = rand() % 13;
     int suitIndex = rand() % 4;
@@ -152,12 +155,22 @@ void randomcart(int checkmove)//0-Противник, 1-Игрок
             carddown[cardenemy].replace(carddown[cardenemy].find('V'), 1, value);
             cardmiddle[cardenemy].replace(cardmiddle[cardenemy].find('S'), 1, suit);
             cardenemy++;
+            summenemy += numcarts[num];
         }
         else {
             cardup[cardplayer + 10].replace(cardup[cardplayer + 10].find('V'), 1, value);
             carddown[cardplayer + 10].replace(carddown[cardplayer + 10].find('V'), 1, value);
             cardmiddle[cardplayer + 10].replace(cardmiddle[cardplayer + 10].find('S'), 1, suit);
             cardplayer++;
+            if (value == "A") {
+                int temp;
+                do {
+                    cout << "Will Ace be equal to 1 or 11?" << endl;
+                    cin >> temp;
+                } while (temp != 11 && temp != 1);
+                numcarts[12] = temp;
+            }
+            summplayer += numcarts[num];
         }
     }
     else {
@@ -165,13 +178,15 @@ void randomcart(int checkmove)//0-Противник, 1-Игрок
             cardup[cardenemy] = "|10     |";
             carddown[cardenemy] = "|     10|";
             cardmiddle[cardenemy].replace(cardmiddle[cardenemy].find('S'), 1, suit);
-            cardenemy;
+            cardenemy++;
+            summenemy += numcarts[num];
         }
         else {
             cardup[cardplayer + 10] = "|10     |";
             carddown[cardplayer + 10] = "|     10|";
             cardmiddle[cardplayer + 10].replace(cardmiddle[cardplayer + 10].find('S'), 1, suit);
             cardplayer++;
+            summplayer += numcarts[num];
         }
     }
     system("cls");
@@ -237,7 +252,7 @@ void Profilee() {
   Balance: )" + std::to_string(Balance) + u8R"(                                            
   Wins: )" + std::to_string(wins) + u8R"(                                                                        
   Losses: )" + std::to_string(defeats) + u8R"(                                                                   
-  Max Win: )" + std::to_string(maxWins) + u8R"(                                                 
+  Wins: )" + std::to_string(Wins) + u8R"(                                                 
   Last Game: )" + lastGame + u8R"(                                                          
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════╝
 )";
@@ -246,11 +261,12 @@ void Profilee() {
         cout << "Do you want to change your nickname? (y/n): ";
         char answer;
         cin >> answer;
-        cin.ignore(numeric_limits<streamsize>::max(), '\n'); // очистка после cin >>
+        cin.ignore(answer, '\n'); // очистка после cin >>
 
         if (answer == 'y' || answer == 'Y') {
             ChangeUsername();
-        } else {
+        }
+        else {
             break;  // Выход из профиля обратно в меню
         }
     }
@@ -289,10 +305,75 @@ void Exitt() {
     exit(0);
 }
 
+void CheckWin(bool takecard) {
+    if (summplayer == 21)
+    {
+        Sleep(2000);
+        system("cls");
+        cout << "YOU WIN" << endl;
+        Balance = Balance + Bit * 2;
+        Wins++;
+        lastGame = "Win";
+        Sleep(1500);
+        Menuu();
+    }
+    if (summplayer > 21) {
+        Sleep(2000);
+        system("cls");
+        cout << "You lose";
+        defeats++;
+        lastGame = "Lose";
+        Sleep(1500);
+        Menuu();
+    }
+    if (!takecard) {
+        if (summplayer >= summenemy)
+        {
+            randomcart(0);
+            system("cls");
+            drawtable();
+            Sleep(2000);
+            CheckWin(takecard);
+        }
+        if (summenemy == 21 && summplayer != 21)
+        {
+            Sleep(2000);
+            system("cls");
+            cout << "Draw";
+            lastGame = "Draw";
+            Balance += Bit;
+            Sleep(1500);
+            Menuu();
+        }
+        if (summenemy > 21) {
+            Sleep(2000);
+            system("cls");
+            cout << "YOU WIN";
+            lastGame = "Win";
+            Wins++;
+            Balance = Balance + Bit * 2;
+            Sleep(1500);
+            Menuu();
+        }
+        if (summenemy > summplayer) {
+            Sleep(2000);
+            system("cls");
+            cout << "You lose";
+            defeats++;
+            lastGame = "Lose";
+            Sleep(1500);
+            Menuu();
+        }
+    }
+}
+
 void NewGamee() {
-    system("cls");
     SetConsoleOutputCP(CP_UTF8);
     srand(time(NULL));
+    cardplayer = 0;
+    cardenemy = 0;
+    summplayer = 0;
+    summenemy = 0;
     bool bitPlaced = false; // Флаг, ставилась ли ставка
     for (int i = 0; i < 10; i++) {
         cardup[i] = u8"|       |";
@@ -317,56 +398,68 @@ void NewGamee() {
 
     randomcart(0);
     int choice;
-    bool takecard = true;//Проверка 
-    int temp;//Для добавления ставки
-    int action;
-
-    cin >> action;
-
-    if (action == 4) {
-        cout << "You've given up. Half of your bet is refunded.\n";
-        Balance += Bit / 2;
-        Bit = 0;
-        Sleep(2000);
-        return; // выход из игры
-    }
-    if (action == 3) {
-        if (Balance >= Bit) {
-            Balance -= Bit;
-            Bit *= 2;
-            cout << "The bet is doubled. You get one card.\n";
-            randomcart(1);
-            Sleep(1000);
-            takecard = false; // нельзя больше брать
-        }
-        else {
-            cout << "There are not enough funds to double the bet.\n";
-            Sleep(1500);
-        }
-    }
+    string choice_str;
+    bool takecard = true;//Проверка
+    bool stop = true;
 
     while (true) {
-        cin >> choice;
-        switch (choice) {
-        case 1: {
-            if (Bit == 0)
-            {
-                cout << "First you need to place a bit!";
-                Sleep(1700);
-                system("cls");
+        cin >> choice_str;
+
+        try {
+            choice = stod(choice_str);
+            switch (choice) {
+            case 1: {
+                if (takecard && cardplayer < 10) {
+                    randomcart(1);
+                    stop = false;
+                    CheckWin(takecard);
+                    break;
+                }
+            }
+            case 2: takecard = false; stop = false; CheckWin(takecard); break;
+            case 3: {
+                if (takecard) {
+                    if (Balance >= Bit) {
+                        Balance -= Bit;
+                        Bit *= 2;
+                        cout << "The bet is doubled. You get one card.\n";
+                        Sleep(1500);
+                        randomcart(1);
+                        Sleep(1000);
+                        takecard = false;
+                        stop = false;
+                        Sleep(2000);
+                        CheckWin(takecard);
+                        break;
+                    }
+                    else {
+                        cout << "There are not enough funds to double the bet.\n";
+                        Sleep(1500);
+                        drawtable();
+                        break;
+                    }
+                }
+            }
+            case 4: {
+                if (stop) {
+                    cout << "You've given up. Half of your bet is refunded.\n";
+                    Balance += Bit / 2;
+                    Sleep(2000);
+                    defeats++;
+                    lastGame = "Lose";
+                    return; // выход из игры
+                }
+            }
+            default:
+                cout << "Invalid choice. Try again.\n";
+                Sleep(1500);
                 drawtable();
                 break;
             }
-            if (takecard && cardplayer < 10) {
-                randomcart(1);
-                break;
-            }
         }
-        case 2: takecard = false; break;
-        default:
+        catch (...) {
             cout << "Invalid choice. Try again.\n";
             Sleep(1500);
-            system("cls");
             drawtable();
         }
     }
@@ -376,7 +469,9 @@ void StartGamePrompt() {
     system("cls");
     SetConsoleOutputCP(CP_UTF8);
     int temp;
+    string temp_str;
     char choice;
+    Bit = 0;
 
     cout << "Do you want to play a round of Blackjack? (enter any symbol / n): ";
     cin >> choice;
@@ -387,18 +482,27 @@ void StartGamePrompt() {
     while (true) {
         cout << "\nYour balance: " << Balance << endl;
         cout << "Enter your bit (Min: 50$ or 0$ to cancel): ";
-        cin >> temp;
-        if (temp < 50) return; 
-        if (temp == 0) return; // Отмена — назад в меню
-        if (temp > 0 && temp <= Balance) {
-            Bit = temp;
-            Balance -= Bit;
-            break; // Успешно — переходим к игре
-        } else {
-            cout << "Invalid bit! Try again...\n";
-            Sleep(2000);
-            system("cls");
+        cin >> temp_str;
+        try {
+            temp = stod(temp_str);
+            if (temp < 50) return;
+            if (temp == 0) return; // Отмена — назад в меню
+            if (temp > 0 && temp <= Balance) {
+                Bit = temp;
+                Balance -= Bit;
+                break; // Успешно — переходим к игре
+            }
+            else {
+                cout << "Invalid bit! Try again...\n";
+                Sleep(2000);
+                system("cls");
+            }
         }
+        catch (...) {
+            cout << "Invalid count.Try again.\n";
+            Sleep(1500);
+        }
+
     }
 
     NewGamee(); // Запускаем саму игру
@@ -406,9 +510,7 @@ void StartGamePrompt() {
 
 
 void Menuu() {
-    while (true) {
-        system("cls");
-        string menuuu = u8R"( 
+    string menuuu = u8R"( 
                                     ╔══════════════════════════════════════════════════════════════════════════════════════════════════╗
                                     ║  /$$$$$$$  /$$        /$$$$$$   /$$$$$$  /$$   /$$          /$$$$$  /$$$$$$   /$$$$$$  /$$   /$$ ║
                                     ║ | $$__  $$| $$       /$$__  $$ /$$__  $$| $$  /$$/         |__  $$ /$$__  $$ /$$__  $$| $$  /$$/ ║
@@ -431,20 +533,31 @@ void Menuu() {
                                     ╚══════════════════════════════════════════════════════════════════════════════════════════════════╝
         
         )";
+    string choice_str;
+    int choice;
+    while (true) {
+        system("cls");
         cout << menuuu;
-        int choice;
-        cin >> choice;
-
-        switch (choice) {
-        case 1: StartGamePrompt(); break;
-        case 2: infoo(); break;
-        case 3: Profilee(); break;
-        case 4: Settingss(); break;
-        case 5: Exitt(); break;
-        default:
+        cin >> choice_str;
+        try {
+            choice = stod(choice_str);
+            switch ((choice)) {
+            case 1: StartGamePrompt(); break;
+            case 2: infoo(); break;
+            case 3: Profilee(); break;
+            case 4: Settingss(); break;
+            case 5: Exitt(); break;
+            default:
+                cout << "Invalid choice. Try again.\n";
+                Sleep(1500);
+                Menuu();
+                break;
+            }
+        }
+        catch (...) {
             cout << "Invalid choice. Try again.\n";
             Sleep(1500);
-            break;
+            Menuu();
         }
     }
 }
@@ -452,6 +565,8 @@ void Menuu() {
 int main() {
     SetConsoleOutputCP(CP_UTF8);
     srand(time(NULL));
+    HWND hConsole = GetConsoleWindow();
+    ShowWindow(hConsole, SW_MAXIMIZE);
     LoadProfile();
     Menuu();
 
