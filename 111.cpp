@@ -338,17 +338,17 @@ void CheckWin(bool takecard) {
     ║                                                                                                  ║
     ╚══════════════════════════════════════════════════════════════════════════════════════════════════╝
     )";
-    if (summplayer == 21)
-    {
-        Sleep(2000);
-        system("cls");
-        Balance = Balance + Bit * 2;
-        Wins++;
-        lastGame = "Win";
-        cout << yWin << endl;
-        system("pause");
-        Menuu();
-    }
+    //if (summplayer == 21)
+    //{
+    //    Sleep(2000);
+    //    system("cls");
+    //    Balance = Balance + Bit * 2;
+    //    Wins++;
+    //    lastGame = "Win";
+    //    cout << yWin << endl;
+    //    system("pause");
+    //    Menuu();
+    //}
     if (summplayer > 21) {
         Sleep(2000);
         system("cls");
